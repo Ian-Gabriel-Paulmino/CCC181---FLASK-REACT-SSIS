@@ -11,9 +11,9 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from werkzeug.exceptions import RequestEntityTooLarge
 
-
-from flask import Flask
+from flask import Flask, jsonify
 from flask_wtf.csrf import CSRFProtect
 from flask_wtf.csrf import generate_csrf
 
@@ -42,6 +42,7 @@ from backend.routes import student_routes
 def create_app():
     app = Flask(__name__)                   # Create a new Flask application instance.
     app.config.from_object(Config)          # Load configuration settings from the Config class.
+    app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024    # Sets 5mb limit to profile uploads
 
     csrf = CSRFProtect(app)                 # Initialize CSRF protection for the app.
 
@@ -53,6 +54,12 @@ def create_app():
     app.register_blueprint(program_routes, url_prefix='/api/programs')
     app.register_blueprint(config_routes,url_prefix='/api/csrf_token')
     app.register_blueprint(student_routes,url_prefix='/api/students')
+
+
+    # Catch error here since this error handler does not work in routes
+    @app.errorhandler(RequestEntityTooLarge)
+    def file_size_limit_error(error):
+        return jsonify({"message":"File size must not exceed 5MB!"}),413
 
     # Return the configured application instance.
     return app

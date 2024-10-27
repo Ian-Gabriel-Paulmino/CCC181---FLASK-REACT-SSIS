@@ -51,11 +51,11 @@ class Student:
         return student_id
     
     @staticmethod
-    def addStudent(Student_Id,FirstName,LastName,Year_Level,Gender,Program_Code):
+    def addStudent(Student_Id,FirstName,LastName,Year_Level,Gender,Program_Code,Profile_Url):
         connection = db_connection()
         cursor = connection.cursor()
-        sqlQuery = "INSERT INTO Students (Student_Id,FirstName,LastName,Year_Level,Gender,Program_Code) VALUES (%s,%s,%s,%s,%s,%s)"
-        sqlValues = (Student_Id,FirstName,LastName,Year_Level,Gender,Program_Code)
+        sqlQuery = "INSERT INTO Students (Student_Id,FirstName,LastName,Year_Level,Gender,Program_Code,Profile_Url) VALUES (%s,%s,%s,%s,%s,%s,%s)"
+        sqlValues = (Student_Id,FirstName,LastName,Year_Level,Gender,Program_Code,Profile_Url)
         cursor.execute(sqlQuery,sqlValues)
         connection.commit()
         cursor.close()
@@ -63,11 +63,11 @@ class Student:
 
 
     @staticmethod
-    def updateStudent(Student_Id,FirstName,LastName,Year_Level,Gender,Program_Code,Student_Id_OLD):
+    def updateStudent(Student_Id,FirstName,LastName,Year_Level,Gender,Program_Code,Profile_Url,Student_Id_OLD):
         connection = db_connection()
         cursor = connection.cursor()
-        sqlQuery = "UPDATE Students SET Student_Id = %s, FirstName = %s, LastName = %s, Year_Level = %s, Gender = %s, Program_Code = %s WHERE Student_Id = %s"
-        sqlValues = (Student_Id,FirstName,LastName,Year_Level,Gender,Program_Code,Student_Id_OLD)
+        sqlQuery = "UPDATE Students SET Student_Id = %s, FirstName = %s, LastName = %s, Year_Level = %s, Gender = %s, Program_Code = %s, Profile_Url = %s WHERE Student_Id = %s"
+        sqlValues = (Student_Id,FirstName,LastName,Year_Level,Gender,Program_Code,Profile_Url,Student_Id_OLD)
         cursor.execute(sqlQuery,sqlValues)
         connection.commit()
         cursor.close()

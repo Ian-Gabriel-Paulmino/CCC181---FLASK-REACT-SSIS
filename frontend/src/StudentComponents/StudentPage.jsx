@@ -19,6 +19,7 @@ import StudentSearch from "./StudentSearch";
 import Failed from "../UtilityComponents/Failed";
 import Success from "../UtilityComponents/Success";
 import Navbar from "../UtilityComponents/Navbar";
+import ProfileModal from "../UtilityComponents/ProfileModal";
 import axios from "axios";
 
 
@@ -34,6 +35,9 @@ function StudentPage() {
     type: null,
     message: "",
   });
+
+  const [previewStudent, selectPreviewStudent] = useState(null);
+  const [showPreviewModal, setPreviewModal] = useState(false);
 
   const fetchStudents = async () => {
     try {
@@ -92,6 +96,11 @@ function StudentPage() {
     });
   };
 
+  const closePreviewModal = () => {
+    setPreviewModal(false);
+    selectPreviewStudent(null);
+  }
+
   const showModal = function (type, message) {
     setModalState({
       type: type,
@@ -116,12 +125,20 @@ function StudentPage() {
     setStudentDeleteComp(true);
   };
 
+  const setPreviewStudent = (student) => {
+    selectPreviewStudent(student);
+    setPreviewModal(true);
+  }
+
   // Conditional Render of Students
   const displaySearch = searchResults?.length > 0 ? searchResults : students;
 
   // Rendering the child components and passing the proper props
   return (
     <div className="parent-div">
+      <div>
+        <ProfileModal student={previewStudent} closeModal={closePreviewModal}/>
+      </div>
       <div className="side-div">
         <Navbar/>
       </div>
@@ -160,6 +177,7 @@ function StudentPage() {
             <StudentList
               setUpdateStudent={setUpdateStudent}
               setDeleteStudent={setDeleteStudent}
+              setPreviewStudent={setPreviewStudent}
               students={displaySearch}
             />
           </div>

@@ -12,6 +12,8 @@ python-dotenv = "*"
 flask-wtf = "*"
 flask-cors = "*"
 cryptography = "*"
+cloudinary = "*"
+flask-uploads = "*"
 
 [dev-packages]
 

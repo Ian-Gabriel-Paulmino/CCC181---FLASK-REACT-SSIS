@@ -12,6 +12,8 @@ import { useEffect, useState, useContext } from "react";
 import { CSRFContext } from "../App";
 import axios from "axios";
 
+import LoadingModal from "../UtilityComponents/LoadingModal";
+
 function StudentForm({
   studentToUpdate = {},
   updateCallBack,
@@ -27,7 +29,10 @@ function StudentForm({
   const [year_level, setYearLevel] = useState("");
   const [gender, setGender] = useState("");
   const [program_code, setProgramCode] = useState("");
+  const [student_profile,setStudentProfile] = useState(null);
   const csrfToken = useContext(CSRFContext);
+
+  const [isLoading,setLoading] = useState(false);
 
   // Sets the data for the fields, if the studentToUpdate props is empty it means the Form is adding else it is updating
   useEffect(() => {
@@ -72,16 +77,20 @@ function StudentForm({
         return;
       }
 
+      setLoading(true);
+
+      // Creates a FormData object to allow files/images to be uploaded
+      const studentFormData = new FormData();
+      studentFormData.append('Student_Id',student_id);
+      studentFormData.append('FirstName',firstname);
+      studentFormData.append('LastName',lastname);
+      studentFormData.append('Year_Level',year_level);
+      studentFormData.append('Gender',gender);
+      studentFormData.append('Program_Code',program_code);
+      studentFormData.append('Student_Profile',student_profile);
+
       const response = await axios.patch(
-        `http://localhost:5000/api/students/update/${studentToUpdate.Student_Id}`,
-        {
-          Student_Id: student_id,
-          FirstName: firstname,
-          LastName: lastname,
-          Year_Level: year_level,
-          Gender: gender,
-          Program_Code: program_code,
-        },
+        `http://localhost:5000/api/students/update/${studentToUpdate.Student_Id}`,studentFormData,
         {
           headers: {
             "X-CSRFToken": csrfToken,
@@ -103,6 +112,8 @@ function StudentForm({
       errorCallback(
         `Error in updating Student: ${error?.response?.data?.message}`
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -122,18 +133,23 @@ function StudentForm({
         return;
       }
 
+      setLoading(true);
+
+      // Creates a FormData object to allow files/images to be uploaded
+      const studentFormData = new FormData();
+      studentFormData.append('Student_Id',student_id);
+      studentFormData.append('FirstName',firstname);
+      studentFormData.append('LastName',lastname);
+      studentFormData.append('Year_Level',year_level);
+      studentFormData.append('Gender',gender);
+      studentFormData.append('Program_Code',program_code);
+      studentFormData.append('Student_Profile',student_profile);
+
       const response = await axios.post(
-        `http://localhost:5000/api/students/add`,
-        {
-          Student_Id: student_id,
-          FirstName: firstname,
-          LastName: lastname,
-          Year_Level: year_level,
-          Gender: gender,
-          Program_Code: program_code,
-        },
+        `http://localhost:5000/api/students/add`,studentFormData,
         {
           headers: {
+            "Content-Type": "multipart/form-data",
             "X-CSRFToken": csrfToken,
           },
           withCredentials: true,
@@ -153,6 +169,8 @@ function StudentForm({
       errorCallback(
         `Error in adding Student: ${error?.response?.data?.message}`
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -179,6 +197,9 @@ function StudentForm({
 
   // Actual Form skeleton
   return (
+    <>
+      {isLoading && <LoadingModal/>}
+
     <div className="form">
       <span
         className="closeForm"
@@ -188,6 +209,13 @@ function StudentForm({
         &times;
       </span>
       <h3> {updating ? "Update Student" : "Add Student"}</h3>
+      <input
+        type="file"
+        onChange={(e) => {
+          const profile = e.target.files[0];
+          profile ? setStudentProfile(profile) : setStudentProfile(null);
+        }}
+      />
       <input
         type="text"
         placeholder="Student ID"
@@ -230,6 +258,7 @@ function StudentForm({
         {updating ? "Update Student" : "Add Student"}
       </button>
     </div>
+    </>
   );
 }
 

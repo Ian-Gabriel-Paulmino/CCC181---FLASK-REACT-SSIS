@@ -16,6 +16,11 @@ import re
 # Add the parent directory to the Python path to import backend models
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..','..')))
 
+
+# Importing Cloudinary related files
+from ..cloudinary_config import cloudinary
+import cloudinary.uploader
+
 from flask import Blueprint,jsonify,request
 from backend.models import Student
 from pymysql.err import IntegrityError
@@ -50,6 +55,7 @@ def getStudents():
         - Year_Level: Year level of the student (required).
         - Gender: Gender of the student (required).
         - Program_Code: Code of the program the student is enrolled in (required).
+        - Student_Profile: A file that contains the raw image of the student profile
     
     If any field is missing, a 400 error is returned.
     If the Student_Id format is invalid, a 400 error is returned.
@@ -60,7 +66,7 @@ def getStudents():
 """
 @student_routes.route('/add',methods=['POST'])
 def addStudent():
-    data = request.json
+    data = request.form
     Student_Id = data.get('Student_Id')
     FirstName = data.get('FirstName')
     LastName = data.get('LastName')
@@ -68,13 +74,27 @@ def addStudent():
     Gender = data.get('Gender')
     Program_Code = data.get('Program_Code')
 
+    Student_Profile = request.files.get('Student_Profile')
+
     if not Student_Id or not FirstName or not LastName or not Year_Level or not Gender or not Program_Code:
         return jsonify({"message":"Fields are missing ERROR"}), 400
     
     if not validateStudentID(Student_Id):
         return jsonify({"message":f"Error Student ID input {Student_Id} format is not valid! Expected format: XXXX-XXXX"}),400
     try:
-        Student.addStudent(Student_Id,FirstName,LastName,Year_Level,Gender,Program_Code)
+
+        if Student_Profile:
+            if not allowed_file(Student_Profile.filename):
+                return jsonify({"message":"Invalid file type! Please upload either a .jpeg file or .png file"}),400
+
+            upload_profile = cloudinary.uploader.upload(Student_Profile,folder='Students')
+            image_url = upload_profile['secure_url']
+        else:
+            return jsonify({"message":"Profile is missing Error"}), 400
+
+        Student.addStudent(Student_Id,FirstName,LastName,Year_Level,Gender,Program_Code,image_url)
+
+ 
     except IntegrityError as e:
         if e.args[0] == 1062:
             return jsonify({"message":f"Error Duplicate entry found in fields for Student ID: {Student_Id}"}),409
@@ -103,6 +123,7 @@ def addStudent():
         - Year_Level: New year level of the student (optional).
         - Gender: New gender of the student (optional).
         - Program_Code: New program code the student is enrolled in (optional).
+        - Student_Profile: A file that contains the raw image of the student profile
     
     If the student does not exist, a 404 error is returned.
     If the Student_Id format is invalid, a 400 error is returned.
@@ -118,7 +139,7 @@ def updateStudent(StudentCodeUp):
     if not StudentToUpdate:
         return jsonify({"message":"Student to update does NOT EXIST"}), 404
     
-    data = request.json
+    data = request.form
     Student_Id = data.get("Student_Id",StudentToUpdate['Student_Id'])
     FirstName = data.get("FirstName",StudentToUpdate['FirstName'])
     LastName = data.get("LastName",StudentToUpdate['LastName'])
@@ -126,11 +147,30 @@ def updateStudent(StudentCodeUp):
     Gender = data.get("Gender",StudentToUpdate['Gender'])
     Program_Code = data.get("Program_Code",StudentToUpdate['Program_Code'])
 
+    Student_Profile = request.files.get('Student_Profile')
+
+
+    existing_Student_Profile = StudentToUpdate['Profile_Url']
+
     if not validateStudentID(Student_Id):
         return jsonify({"message":f"Error Student ID input {Student_Id} format is not valid! Expected format: XXXX-XXXX"}),400
 
     try:
-        Student.updateStudent(Student_Id,FirstName,LastName,Year_Level,Gender,Program_Code,StudentCodeUp)
+        # When updating, if there are no files uploaded, the student profile is retained rather than requiring it and re-uploading into cloudinary
+        if Student_Profile:
+            if not allowed_file(Student_Profile.filename):
+                return jsonify({"message":"Invalid file type! Please upload either a .jpeg file or .png file"}),400
+            
+            profile_public_id = extractPublicId(existing_Student_Profile)
+            cloudinary.uploader.destroy(profile_public_id)
+
+            upload_profile = cloudinary.uploader.upload(Student_Profile,folder='Students')
+            image_url = upload_profile['secure_url']
+        else:
+            image_url = existing_Student_Profile
+
+
+        Student.updateStudent(Student_Id,FirstName,LastName,Year_Level,Gender,Program_Code,image_url,StudentCodeUp)
 
     except IntegrityError as e:
         if e.args[0] == 1062:
@@ -152,6 +192,7 @@ def updateStudent(StudentCodeUp):
         - StudentCodeDel: ID of the student to delete (required).
     
     If the student does not exist, a 404 error is returned.
+    Also deletes the profile of the student in cloudinary 
     
     Returns:
         - A JSON response indicating success or error.
@@ -164,6 +205,10 @@ def deleteStudent(StudentCodeDel):
         return jsonify({"message":"Student to delete does NOT EXIST"}), 400
     
     try:
+        student_profile = StudentToDelete['Profile_Url']
+        profile_public_id = extractPublicId(student_profile)
+        cloudinary.uploader.destroy(profile_public_id)
+
         Student.deleteStudent(StudentCodeDel)
     except Exception as e:
         return jsonify({"message":f"Error in DELETING Student: {str(e)}"}),400
@@ -203,3 +248,22 @@ def searchStudent(Type,SearchQuery):
 def validateStudentID(Student_Id):
     format = r'^\d{4}-\d{4}$'
     return re.match(format,Student_Id) is not None
+
+
+# Public Id extractor for cloudinary images
+def extractPublicId(url):
+    pattern = r"/upload/v[^/]+/(.*?)(?=\.\w+$)"
+
+    match = re.search(pattern, url)
+    if match:
+        public_id = match.group(1)
+        return public_id 
+    
+
+# list of only allowed file extensions
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
+# Helper function to extract the extension within an uploaded image and validating it
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

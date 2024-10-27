@@ -35,6 +35,8 @@
 -- )
 
 
+-- ALTER TABLE Students ADD COLUMN Profile_Url VARCHAR(255)
+-- SELECT Profile_Url FROM Students
 
 
 -- INSERT INTO Students (Student_Id,LastName,FirstName,Year_level,Gender,Program_Code) VALUES ("2022-1729","Paulmino","Ian Gabriel","3rd Year","Male","BSCE")
