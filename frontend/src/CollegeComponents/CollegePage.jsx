@@ -58,6 +58,7 @@ function CollegePage() {
     fetchColleges();
     setCollegeForm(false);
     showModal("success", message);
+    setCollegeToUpdate({});
   };
 
   const afterDeleteCollege = (message) => {

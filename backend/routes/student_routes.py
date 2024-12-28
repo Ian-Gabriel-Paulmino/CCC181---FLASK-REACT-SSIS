@@ -13,6 +13,8 @@ import sys
 import os
 import re
 
+from pathlib import Path
+
 # Add the parent directory to the Python path to import backend models
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..','..')))
 
@@ -29,6 +31,9 @@ from pymysql.err import IntegrityError
 # Create a Blueprint for program routes
 student_routes = Blueprint('student_routes',__name__)
 
+
+current_dir = Path(__file__).parent
+placeholder_path = current_dir.parent / 'assets' / 'placeholder_profile.png'
 
 
 """
@@ -88,9 +93,15 @@ def addStudent():
                 return jsonify({"message":"Invalid file type! Please upload either a .jpeg file or .png file"}),400
 
             upload_profile = cloudinary.uploader.upload(Student_Profile,folder='Students')
-            image_url = upload_profile['secure_url']
+            # image_url = upload_profile['secure_url']
         else:
-            return jsonify({"message":"Profile is missing Error"}), 400
+            with open(placeholder_path, 'rb') as placeholder_file:
+                upload_profile = cloudinary.uploader.upload(placeholder_file, folder='Students')
+            
+            #return jsonify({"message":"Profile is missing Error"}), 400
+
+
+        image_url = upload_profile['secure_url']
 
         Student.addStudent(Student_Id,FirstName,LastName,Year_Level,Gender,Program_Code,image_url)
 

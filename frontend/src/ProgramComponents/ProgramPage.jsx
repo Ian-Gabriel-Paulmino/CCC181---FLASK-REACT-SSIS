@@ -61,6 +61,7 @@ function ProgramPage() {
     fetchPrograms();
     setProgramForm(false);
     showModal("success", message);
+    setProgramToUpdate({});
   };
 
   const afterDeleteProgram = (message) => {

@@ -61,6 +61,7 @@ function StudentPage() {
     fetchStudents();
     setStudentForm(false);
     showModal("success", message);
+    setStudentToUpdate({});
   };
 
   const afterDeleteStudent = (message) => {
