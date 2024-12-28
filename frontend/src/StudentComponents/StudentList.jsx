@@ -15,12 +15,33 @@
  * 
  */
 
-
-import { FaTrash, FaRegEdit } from "react-icons/fa";
+import {useState} from "react";
+import { FaTrash, FaRegEdit, } from "react-icons/fa";
 
 
 function StudentList({ setDeleteStudent, setUpdateStudent,setPreviewStudent ,students }) {
- 
+  
+  const [currentPage,setCurrentPage] = useState(1);
+  const studentsPerPage = 10;
+
+  const indexOfLastStudent = currentPage * studentsPerPage;
+  const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
+  const currentStudents = students.slice(indexOfFirstStudent,indexOfLastStudent);
+  const totalPages = Math.ceil(students.length / studentsPerPage);
+
+
+  const nextPage = () => {
+    if(currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  }
+
+  const prevPage = () => {
+    if(currentPage > 1){
+      setCurrentPage(currentPage - 1);
+    }
+  }
+
   return (
     <div className="student-list-parent">
       <h1>Students</h1>
@@ -38,7 +59,7 @@ function StudentList({ setDeleteStudent, setUpdateStudent,setPreviewStudent ,stu
             </tr>
           </thead>
           <tbody>
-            {students.map((student) => {
+            {currentStudents.map((student) => {
               if (!student.Student_Id) {
                 return null;
               }
@@ -84,7 +105,27 @@ function StudentList({ setDeleteStudent, setUpdateStudent,setPreviewStudent ,stu
           </tbody>
         </div>
       </table>
+
+    <div>
+      <div>
+        <button onClick={prevPage}>
+        Prev
+        </button>
+
+        <span>
+          Page {currentPage} of {totalPages}
+        </span>
+
+        <button onClick={nextPage}>
+        Next
+        </button>
+      </div>
+
     </div>
+    
+
+    </div>
+    
   );
 }
 
