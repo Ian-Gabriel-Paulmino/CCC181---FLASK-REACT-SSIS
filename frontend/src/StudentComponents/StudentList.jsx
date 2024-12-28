@@ -84,7 +84,7 @@ function StudentList({ setDeleteStudent, setUpdateStudent,setPreviewStudent ,stu
                   <td>{student.LastName}</td>
                   <td>{student.Year_Level}</td>
                   <td>{student.Gender}</td>
-                  <td>{student.Program_Code}</td>
+                  <td>{student.Program_Code} ({student.College_Name})</td>
                   <td>
                     <button
                       className="update-btn"
