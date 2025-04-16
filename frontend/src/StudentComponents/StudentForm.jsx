@@ -58,7 +58,7 @@ function StudentForm({
       setPrograms(response.data);
       console.log(response.data);
     } catch (error) {
-      console.error("Error in fetching Programs");
+      console.error("Error in fetching Programs",error);
     }
   };
 

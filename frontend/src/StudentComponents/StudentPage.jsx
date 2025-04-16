@@ -37,7 +37,7 @@ function StudentPage() {
   });
 
   const [previewStudent, selectPreviewStudent] = useState(null);
-  const [showPreviewModal, setPreviewModal] = useState(false);
+  // const [showPreviewModal, setPreviewModal] = useState(false);
 
   const fetchStudents = async () => {
     try {
@@ -98,7 +98,7 @@ function StudentPage() {
   };
 
   const closePreviewModal = () => {
-    setPreviewModal(false);
+    // setPreviewModal(false);
     selectPreviewStudent(null);
   }
 
@@ -128,7 +128,7 @@ function StudentPage() {
 
   const setPreviewStudent = (student) => {
     selectPreviewStudent(student);
-    setPreviewModal(true);
+    // setPreviewModal(true);
   }
 
   // Conditional Render of Students

@@ -50,7 +50,7 @@ function ProgramForm({
       setColleges(response.data);
       console.log(response.data);
     } catch (err) {
-      console.error("Error fetching Colleges");
+      console.error("Error fetching Colleges",err);
     }
   };
 

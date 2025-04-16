@@ -92,11 +92,15 @@ table {
 }
 
 
+/* .content-div {
+  background-color: red !important;
+} */
 
 /* Table Content Adjustments **********************************************************************/
 .content-div td, thead {
-  padding: .7rem 1.9rem;
+  padding: .7rem 1.5rem;
 }
+/* padding: 1% -20% 1% 1%; */
 
 .program-content td, thead {
   padding: .7rem 4.9rem;

@@ -28,11 +28,21 @@ import pymysql.cursors
 
 class Student:
     
+    # @staticmethod
+    # def getStudents():
+    #     connection = db_connection()
+    #     cursor = connection.cursor(pymysql.cursors.DictCursor)
+    #     cursor.execute("SELECT * FROM Students")
+    #     students = cursor.fetchall()
+    #     cursor.close()
+    #     connection.close()
+    #     return students
+
     @staticmethod
     def getStudents():
         connection = db_connection()
         cursor = connection.cursor(pymysql.cursors.DictCursor)
-        cursor.execute("SELECT * FROM Students")
+        cursor.execute("SELECT S.*,C.College_Name FROM Students S LEFT JOIN Programs P ON S.Program_Code = P.Program_Code LEFT JOIN Colleges C ON C.College_Code = P.College_Code")
         students = cursor.fetchall()
         cursor.close()
         connection.close()
@@ -88,7 +98,7 @@ class Student:
     def searchStudentId(Student_Id):
         connection = db_connection()
         cursor = connection.cursor(pymysql.cursors.DictCursor)
-        sqlQuery = "SELECT * FROM Students WHERE Student_Id LIKE %s"
+        sqlQuery = "SELECT S.*,C.College_Name FROM Students S LEFT JOIN Programs P ON S.Program_Code = P.Program_Code LEFT JOIN Colleges C ON C.College_Code = P.College_Code WHERE College_Name LIKE %s"
         sqlValues = (f"%{Student_Id}%")
         cursor.execute(sqlQuery,sqlValues)
         students = cursor.fetchall()
